@@ -18,12 +18,78 @@
             </div>
         </nav>
 
+        <div class="row main-container">
+            <div class="col-md-9 col-xs-12 left-side" id="map"></div>
+            <div class="col-md-3 col-xs-12 right-side">Last tweets</div>
+        </div>
 
-            <div class="row main-container">
-                <div class="col-md-9 col-xs-12 left-side"></div>
-                <div class="col-md-3 col-xs-12 right-side">Last tweets</div>
-            </div>
+        <script>
+            let map;
+            let marker;
 
+            /**
+             * Create the map
+             */
+            function initMap() {
+                map = new google.maps.Map(document.getElementById('map'), {
+                    center: {lat: -34.397, lng: 150.644},
+                    zoom: 3
+                });
+            }
 
+            /**
+             * Update the map target
+             */
+            function moveToLocation(lat, lng){
+                var center = new google.maps.LatLng(lat, lng);
+                map.panTo(center);
+            }
+
+            /**
+             * Draw a new marker at the given coordinates
+             * @param {string] lat: the latitude
+             * @param {string] lng: the longitude
+             */
+            function drawMarker(lat, lng) {
+                const position = {lat: parseFloat(lat), lng: parseFloat(lng)};
+
+                // replace the last marker icon by a simple point
+                if(marker) {
+                    marker.setIcon({
+                        path: google.maps.SymbolPath.CIRCLE,
+                        scale: 2
+                    });
+                }
+
+                // create a new point with the last ISS coordinates
+                marker = new google.maps.Marker({
+                    position,
+                    map,
+                    title: 'ISS !',
+                    icon: '/public/images/iss.png'
+                });
+            }
+
+            /**
+             * Make a request to get the last coordinates of the ISS
+             */
+            function updateISSPosition() {
+                $.ajax({
+                    url: "http://api.open-notify.org/iss-now.json",
+                    method: "get"
+                }).done(function(data) {
+                    const lat = data.iss_position.latitude;
+                    const lng = data.iss_position.longitude;
+
+                    // update the map
+                    moveToLocation(lat, lng);
+                    drawMarker(lat, lng);
+                });
+            }
+
+            setInterval(_ => { updateISSPosition()}, 3500);
+        </script>
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCo2c7JUO_CKOregCnUwULdbVgVIdoGnOc&callback=initMap"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     </body>
 </html>
