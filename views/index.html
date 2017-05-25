@@ -61,12 +61,19 @@
                     });
                 }
 
+                const markerIcon = new google.maps.MarkerImage(
+                    '/public/images/iss.png',
+                    new google.maps.Size(64, 64),
+                    new google.maps.Point(0, 0),
+                    new google.maps.Point(32, 32)
+                );
+
                 // create a new point with the last ISS coordinates
                 marker = new google.maps.Marker({
                     position,
                     map,
                     title: 'ISS !',
-                    icon: '/public/images/iss.png'
+                    icon: markerIcon
                 });
             }
 
