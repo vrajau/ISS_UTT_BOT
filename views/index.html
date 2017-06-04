@@ -23,9 +23,11 @@
             <div class="col-md-3 col-xs-12 right-side">Last tweets</div>
         </div>
 
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
         <script>
             let map;
             let marker;
+            let geocoder;
 
             /**
              * Create the map
@@ -35,13 +37,14 @@
                     center: {lat: -34.397, lng: 150.644},
                     zoom: 3
                 });
+                geocoder = new google.maps.Geocoder;
             }
 
             /**
              * Update the map target
              */
             function moveToLocation(lat, lng){
-                var center = new google.maps.LatLng(lat, lng);
+                const center = new google.maps.LatLng(lat, lng);
                 map.panTo(center);
             }
 
@@ -91,12 +94,46 @@
                     // update the map
                     moveToLocation(lat, lng);
                     drawMarker(lat, lng);
+
+                    // get the name of the city of the current location
+                    // do nothing in the catch => it's simply because the location can't be found
+                    getCityName(parseFloat(lat), parseFloat(lng))
+                    .then(name => name && console.log(name))
+                    .catch(err => null);
                 });
             }
 
+            /**
+             * Make a request to get the name of a city from his coordinates
+             * Geocoding doc : https://developers.google.com/maps/documentation/javascript/geocoding?hl=FR
+             */
+            function getCityName(lat, lng) {
+                return new Promise((resolve, reject) => {
+                    // use geocoding api to get the location name from coordinates
+                    geocoder.geocode({'location': {lat, lng}}, (results, status) => {
+                        if (status === 'OK') {
+                            // if location has been found
+                            if (results[0]) {
+                                // search the locality name (take a look at the official geocoding documentation to understand the response format)
+                                for (let result of results) {
+                                    for (let i in result.types) {
+                                        if (result.types[i] === "locality") {
+                                            resolve(result.formatted_address.split(', ')[i]);
+                                        }
+                                    }
+                                }
+                            }
+                            resolve(null);
+                        } else {
+                            reject('Geocoder failed due to: ' + status)
+                        }
+                    })
+                });
+            }
+
+            updateISSPosition();
             setInterval(_ => { updateISSPosition()}, 3500);
         </script>
         <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCo2c7JUO_CKOregCnUwULdbVgVIdoGnOc&callback=initMap"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     </body>
 </html>
