@@ -27,7 +27,7 @@
         <script>
             let map;
             let marker;
-            let geocoder;
+            let previousCountryCode = null;
 
             /**
              * Create the map
@@ -97,43 +97,76 @@
 
                     // get the name of the city of the current location
                     // do nothing in the catch => it's simply because the location can't be found
-                    getCityName(parseFloat(lat), parseFloat(lng))
-                    .then(name => name && console.log(name))
-                    .catch(err => null);
+                    getCountryCode(parseFloat(lat), parseFloat(lng))
                 });
             }
 
             /**
-             * Make a request to get the name of a city from his coordinates
+             * Make a request to get the country code of a city from his coordinates
              * Geocoding doc : https://developers.google.com/maps/documentation/javascript/geocoding?hl=FR
              */
-            function getCityName(lat, lng) {
-                return new Promise((resolve, reject) => {
-                    // use geocoding api to get the location name from coordinates
-                    geocoder.geocode({'location': {lat, lng}}, (results, status) => {
-                        if (status === 'OK') {
-                            // if location has been found
-                            if (results[0]) {
-                                // search the locality name (take a look at the official geocoding documentation to understand the response format)
-                                for (let result of results) {
-                                    for (let i in result.types) {
-                                        if (result.types[i] === "locality") {
-                                            resolve(result.formatted_address.split(', ')[i]);
-                                        }
-                                    }
-                                }
-                            }
-                            resolve(null);
-                        } else {
-                            reject('Geocoder failed due to: ' + status)
+            function getCountryCode(lat, lng) {
+                $.ajax({
+                    url: `http://api.geonames.org/findNearbyPostalCodesJSON?lat=${lat}&lng=${lng}&username=demo`,
+                    method: "get"
+                }).done(function(data) {
+                    if (data.postalCodes[0]) {
+                        const countryCode = data.postalCodes[0].countryCode;
+                        if (previousCountryCode != countryCode) {
+                            previousCountryCode = countryCode;
+                            getCountry(countryCode);
                         }
-                    })
+                    }
                 });
+            }
+
+            /**
+             * Make a request to get the language of a country from his country code
+             */
+            function getCountry(countryCode) {
+                $.ajax({
+                    url: `https://restcountries.eu/rest/v2/alpha/${countryCode.toLowerCase()}`,
+                    method: "get"
+                }).done(function(data) {
+                    translateMessage(data.nativeName, data.languages[0][Object.keys(data.languages[0])[0]]);
+                });
+            }
+
+            /**
+             * Make a request to translate the default message into the country language
+             */
+            function translateMessage(countryName, languageCode) {
+                const message = `The ISS is located above the ${countryName} !`;
+
+                $.ajax({
+                    url: `http://www.transltr.org/api/translate?text=${message}&to=${languageCode}&from=en`,
+                    method: "get"
+                }).done(function(data) {
+                    console.log(data.translationText);
+                });
+            }
+
+            function sendTweet(message) {
+                console.log("tweet", message);
             }
 
             updateISSPosition();
             setInterval(_ => { updateISSPosition()}, 3500);
         </script>
         <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCo2c7JUO_CKOregCnUwULdbVgVIdoGnOc&callback=initMap"></script>
+        <script>
+            // TESTS DATA
+            const troyesLat = 48.2973451;
+            const londonLat = 51.5073509;
+            const parisLat = 48.856614;
+            const troyesLng = 4.0744009000000005;
+            const londonLng = -0.12775829999998223;
+            const parisLng = 2.3522219000000177;
+
+            /*getCountryCode(troyesLat, troyesLng);
+            getCountryCode(londonLat, londonLng);
+            getCountryCode(parisLat, parisLng);*/
+
+        </script>
     </body>
 </html>
