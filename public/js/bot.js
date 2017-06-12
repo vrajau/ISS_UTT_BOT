@@ -13,10 +13,11 @@
   setInterval(_ => { updateISSPosition()}, 3500);
 
   function createTimeline(){
-    twttr.widgets.createTimeline(
-      {sourceType: 'profile',screenName: 'UTT_ISS_BOT'},
-      document.getElementById('timeline')
-    );
+    let div = document.getElementById('timeline');
+    while(div.firstChild){
+      div.removeChild(div.firstChild)
+    }
+    twttr.widgets.createTimeline({sourceType: 'profile',screenName: 'UTT_ISS_BOT'},  div    );
   }
 
   /**
@@ -94,6 +95,8 @@
             getCountry(countryCode);
           }
         }
+      }).catch(err=>{
+        console.log(err)
       })
   }
   /**
@@ -109,13 +112,18 @@
    * Make a request to translate the default message into the country language
    */
   function translateMessage(countryName, languageCode) {
-      const message = `Hello ${countryName} ! The ISS above your country !`;
+      const message = `Hello ${countryName} ! The ISS is above your country !`;
       axios.get(`http://www.transltr.org/api/translate?text=${message}&to=${languageCode}&from=en`).then(translator=>{
         sendTweet(translator.data.translationText);
       })
   }
 
   function sendTweet(message) {
-      axios.post('/tweet',{status:message})
+      axios.post('/tweet',{status:message}).then(res=>{
+        createTimeline();
+      }).catch(error=>{
+        console.log(error)
+      })
+
   }
 })()
