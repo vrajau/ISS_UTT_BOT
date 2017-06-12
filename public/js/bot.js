@@ -102,11 +102,11 @@
   function translateMessage(countryName, languageCode) {
       const message = `The ISS is located above the ${countryName} !`;
       axios.get(`http://www.transltr.org/api/translate?text=${message}&to=${languageCode}&from=en`).then(translator=>{
-        console.log(translator.data.translationText);
+        sendTweet(translator.data.translationText);
       })
   }
 
   function sendTweet(message) {
-      console.log("tweet", message);
+      axios.post('/tweet',{status:message})
   }
 })()
