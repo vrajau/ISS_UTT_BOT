@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
+const bodyParser = require("body-parser");
 const app = express();
 const Twitter = require('twitter')
 const client = new Twitter({
@@ -9,6 +10,9 @@ const client = new Twitter({
 	access_token_key: process.env.TOKEN,
 	access_token_secret: process.env.TOKEN_SECRET
 });
+
+//middleware to parse body request
+app.use(bodyParser.json());
 
 // to use /public in html files
 app.use('/public', express.static('public'));
@@ -22,3 +26,7 @@ app.get('/', function (req, res) {
 app.listen(3000, function () {
   console.log('Listening on port 3000!');
 });
+
+app.post('/tweet', function (req,res) {
+    client.post('statuses/update',{status:req.body.status})
+})
