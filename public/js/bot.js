@@ -7,8 +7,17 @@
       }),
       geocoder = new google.maps.Geocoder;
 
+
+  createTimeline()
   updateISSPosition();
   setInterval(_ => { updateISSPosition()}, 3500);
+
+  function createTimeline(){
+    twttr.widgets.createTimeline(
+      {sourceType: 'profile',screenName: 'UTT_ISS_BOT'},
+      document.getElementById('timeline')
+    );
+  }
 
   /**
    * Update the map target
@@ -100,7 +109,7 @@
    * Make a request to translate the default message into the country language
    */
   function translateMessage(countryName, languageCode) {
-      const message = `The ISS is located above the ${countryName} !`;
+      const message = `Hello ${countryName} ! The ISS above your country !`;
       axios.get(`http://www.transltr.org/api/translate?text=${message}&to=${languageCode}&from=en`).then(translator=>{
         sendTweet(translator.data.translationText);
       })
