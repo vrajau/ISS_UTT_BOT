@@ -107,6 +107,7 @@
   }
 
   function sendTweet(message) {
+      console.log(message);
       axios.post('/tweet',{status:message})
   }
 })()

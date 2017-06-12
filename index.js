@@ -1,4 +1,5 @@
 require('dotenv').config();
+
 const express = require('express');
 const path = require('path');
 const bodyParser = require("body-parser");
@@ -22,11 +23,11 @@ app.get('/', function (req, res) {
   res.sendFile(path.join(__dirname + '/views/index.html'));
 });
 
+app.post('/tweet', function (req,res) {
+    client.post('statuses/update',{status:req.body.status})
+});
+
 // run the app
 app.listen(3000, function () {
   console.log('Listening on port 3000!');
 });
-
-app.post('/tweet', function (req,res) {
-    client.post('statuses/update',{status:req.body.status})
-})
