@@ -54,21 +54,20 @@
    * Make a request to get the last coordinates of the ISS
    */
   function updateISSPosition() {
-      $.ajax({
-          url: "http://api.open-notify.org/iss-now.json",
-          method: "get"
-      }).done(function(data) {
-          const lat = data.iss_position.latitude;
-          const lng = data.iss_position.longitude;
+    axios.get('http://api.open-notify.org/iss-now.json').then(position=>{
 
-          // update the map
-          moveToLocation(lat, lng);
-          drawMarker(lat, lng);
+        const lat = position.data.iss_position.latitude;
+        const lng = position.data.iss_position.longitude;
 
-          // get the name of the city of the current location
-          // do nothing in the catch => it's simply because the location can't be found
-          getCountryCode(parseFloat(lat), parseFloat(lng))
-      });
+        // update the map
+        moveToLocation(lat, lng);
+        drawMarker(lat, lng);
+
+        // get the name of the city of the current location
+        // do nothing in the catch => it's simply because the location can't be found
+        getCountryCode(parseFloat(lat), parseFloat(lng))
+
+      })
   }
 
   /**
@@ -76,29 +75,25 @@
    * Geocoding doc : https://developers.google.com/maps/documentation/javascript/geocoding?hl=FR
    */
   function getCountryCode(lat, lng) {
-      $.ajax({
-          url: `http://api.geonames.org/findNearbyPostalCodesJSON?lat=${lat}&lng=${lng}&username=iss_utt_bot`,
-          method: "get"
-      }).done(function(data) {
-          if (data.postalCodes[0]) {
-              const countryCode = data.postalCodes[0].countryCode;
-              if (previousCountryCode != countryCode) {
-                  previousCountryCode = countryCode;
-                  getCountry(countryCode);
-              }
+
+    axios.get(`http://api.geonames.org/findNearbyPostalCodesJSON?lat=${lat}&lng=${lng}&username=iss_utt_bot`)
+      .then(geoname=>{
+        if (geoname.data.postalCodes[0]) {
+          const countryCode = geoname.data.postalCodes[0].countryCode;
+          if (previousCountryCode != countryCode) {
+            previousCountryCode = countryCode;
+            getCountry(countryCode);
           }
-      });
+        }
+      })
   }
   /**
    * Make a request to get the language of a country from his country code
    */
   function getCountry(countryCode) {
-      $.ajax({
-          url: `https://restcountries.eu/rest/v2/alpha/${countryCode.toLowerCase()}`,
-          method: "get"
-      }).done(function(data) {
-          translateMessage(data.nativeName, data.languages[0][Object.keys(data.languages[0])[0]]);
-      });
+      axios.get(`https://restcountries.eu/rest/v2/alpha/${countryCode.toLowerCase()}`).then(countries=>{
+        translateMessage(countries.data.nativeName, countries.data.languages[0][Object.keys(countries.data.languages[0])[0]]);
+      })
   }
 
   /**
@@ -106,13 +101,9 @@
    */
   function translateMessage(countryName, languageCode) {
       const message = `The ISS is located above the ${countryName} !`;
-
-      $.ajax({
-          url: `http://www.transltr.org/api/translate?text=${message}&to=${languageCode}&from=en`,
-          method: "get"
-      }).done(function(data) {
-          console.log(data.translationText);
-      });
+      axios.get(`http://www.transltr.org/api/translate?text=${message}&to=${languageCode}&from=en`).then(translator=>{
+        console.log(translator.data.translationText);
+      })
   }
 
   function sendTweet(message) {
