@@ -23,9 +23,7 @@ html, body {
     border-right: 1px solid;
 }
 
-.right-side {
-    background-color: red;
-}
+
 
 .left-side, .right-side, .main-container {
     height: 100%;

@@ -7,8 +7,22 @@
       }),
       geocoder = new google.maps.Geocoder;
 
+  createTimeline();
   updateISSPosition();
   setInterval(_ => { updateISSPosition()}, 3500);
+
+
+  function createTimeline(){
+    let timeline = document.getElementById('timeline');
+    while(timeline.firstChild){
+      timeline.removeChild(timeline.firstChild);
+    }
+    twttr.widgets.createTimeline({
+      sourceType: 'profile',
+      screenName: 'UTT_ISS_BOT'},timeline,{
+      tweetLimit: 6
+      });
+  }
 
   /**
    * Update the map target
@@ -107,7 +121,8 @@
   }
 
   function sendTweet(message) {
-      console.log(message);
-      axios.post('/tweet',{status:message})
+      axios.post('/tweet',{status:message}).then(()=>{
+        createTimeline()
+      }).catch(()=>{}) //Just Because
   }
 })()
