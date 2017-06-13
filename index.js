@@ -56,7 +56,7 @@ app.route('/tweet')
 	 })
  })
 
-function findByCC(countryCode,tweets){
+function findByCC(countryCode, tweets){
 	let tweetsByCC = [];
 	for(let i in tweets){
 		if(tweets[i].geo.country_code === countryCode){
@@ -68,19 +68,19 @@ function findByCC(countryCode,tweets){
 
 function build_tweets(tweets){
 	let tweets_formated = [];
-	for(let tweet in tweets){
-			tweets_formated[tweet] = {
-				time: tweets[tweet].created_at,
-				text: tweets[tweet].text,
-				url: `https://twitter.com/UTT_ISS_BOT/status/${tweets[tweet].id_str}`,
-				geo:{
-					lat: tweets[tweet].coordinates.coordinates[0],
-					lng: tweets[tweet].coordinates.coordinates[1],
-					city:tweets[tweet].place.name,
-					country: tweets[tweet].place.country,
-					country_code: tweets[tweet].place.country_code
-				}
+	for(let tweet of tweets){
+		tweets_formated.push({
+			time: tweet.created_at,
+			text: tweet.text,
+			url: `https://twitter.com/UTT_ISS_BOT/status/${tweet.id_str}`,
+			geo:{
+				lat: tweet.coordinates.coordinates[0],
+				lng: tweet.coordinates.coordinates[1],
+				city: tweet.place ? tweet.place.name : "",
+				country: tweet.place ? tweet.place.country : "",
+				country_code: tweet.place ? tweet.place.country_code : ""
 			}
-		}
-		return tweets_formated;
+		});
+	}
+	return tweets_formated;
 }
