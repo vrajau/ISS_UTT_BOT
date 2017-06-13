@@ -1,11 +1,13 @@
 exports.findByCC = function(countryCode, tweets){
 	let tweetsByCC = [];
-	for(let i in tweets){
-		if(tweets[i].geo.country_code === countryCode){
-			tweetsByCC[i] = tweets[i]
+	let test =[];
+
+	for(let tweet of tweets){
+		if(tweet.geo.country_code === countryCode){
+			tweetsByCC.push(tweet)
 		}
 	}
-	return tweetsByCC;
+	return tweetsByCC
 };
 
 exports.buildTweets = function(tweets){
