@@ -16,6 +16,7 @@ const tweetFunctions = require('./public/js/tweet_functions');
 
 const countryCodeRegex = new RegExp(/^[a-z]{2}$/i);
 
+const apiRouter = express.Router()
 /*
  	Middlewares
 */
@@ -26,10 +27,15 @@ app.use(bodyParser.json());
 // use /public in html files
 app.use(express.static('public'));
 
+//Api Base
+app.use('/api',apiRouter);
+
 // check if the country code has the right format
-app.use('/tweet/:countryCode', (req, res, next) => {
+apiRouter.use('/tweet/:countryCode', (req, res, next) => {
 	req.params.countryCode.match(countryCodeRegex) ? next() : res.status(400).send("Wrong country code");
 });
+
+
 
 /*
 	Routes
@@ -40,8 +46,21 @@ app.get('/', function (req, res) {
   	res.sendFile(path.join(__dirname + '/views/index.html'));
 });
 
+
+apiRouter.get('/', (req,res) => {
+		res.json({
+			format: 'application/json',
+			action: 'GET',
+			baseUrl: 'http://www.uttissbot.com/api',
+			endpoints: {
+				tweet: '/tweet',
+				tweetcc: '/tweet/{countryCode}'
+			}
+		});
+});
+
 // Route to get all tweet or post a tweet
-app.route('/tweet')
+apiRouter.route('/tweet')
 	.post((req,res,next) => {
 		client.post('statuses/update', {
 		 	status:req.body.status,
@@ -59,7 +78,7 @@ app.route('/tweet')
  	});
 
 // Route to get all the tweets by country code
-app.get('/tweet/:countryCode',(req,res) => {
+apiRouter.get('/tweet/:countryCode',(req,res) => {
  	client.get('statuses/user_timeline',(r,tweets) => {
 	 	res.json(tweetFunctions.findByCC(req.params.countryCode, tweetFunctions.buildTweets(tweets)));
  	})
@@ -68,7 +87,6 @@ app.get('/tweet/:countryCode',(req,res) => {
 /*
 	Run the app
 */
-
 app.listen(3000, function () {
   	console.log('ISS UTT BOT');
 });
