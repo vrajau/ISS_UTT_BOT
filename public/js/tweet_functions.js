@@ -1,7 +1,5 @@
 exports.findByCC = function(countryCode, tweets){
 	let tweetsByCC = [];
-	let test =[];
-
 	for(let tweet of tweets){
 		if(tweet.geo.country_code === countryCode){
 			tweetsByCC.push(tweet)
